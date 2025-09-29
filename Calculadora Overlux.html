@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculadora Solar - Overlux</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      background: #000000;
+      color: #333;
+    }
+    .container {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 15px;
+      max-width: 700px;
+      margin: 40px auto;
+      box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+    .logo {
+      max-width: 220px;
+      margin-bottom: 20px;
+    }
+    h2 {
+      color: #f39c12;
+      margin-bottom: 25px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      text-align: left;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      background: #f39c12;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      margin-top: 20px;
+      width: 100%;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #e67e22;
+    }
+    .result {
+      margin-top: 25px;
+      padding: 20px;
+      background: #fdfaf0;
+      border-radius: 10px;
+      text-align: left;
+      line-height: 1.8;
+      font-size: 16px;
+      border: 1px solid #f39c12;
+    }
+    .result h3 {
+      margin-top: 0;
+      color: #f39c12;
+      border-bottom: 2px solid #f39c12;
+      padding-bottom: 5px;
+    }
+    .highlight {
+      background: #ffe9b3;
+      padding: 4px 8px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .highlight-verde {
+      background: #d4edda;
+      color: #155724;
+      padding: 4px 8px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Logo Overlux -->
+    <img src="logo-overlux.png" alt="Overlux Soluções em Energia" class="logo">
+    
+    <h2>Calculadora Solar Overlux</h2>
+    <label>Energia desejada (kWh/mês):</label>
+    <input type="number" id="energia" placeholder="Ex: 900">
+
+    <label>Potência do módulo (W):</label>
+    <input type="number" id="modulo" placeholder="Ex: 610" value="610">
+
+    <button onclick="calcular()">Calcular</button>
+
+    <div class="result" id="resultado"></div>
+  </div>
+
+<script>
+function formatar(valor) {
+  return valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function formatarMoeda(valor) {
+  return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function calcular() {
+  let energiaDesejada = parseFloat(document.getElementById("energia").value); // kWh/mês
+  let modulo = parseFloat(document.getElementById("modulo").value);
+  let tarifa = 1.15; // R$/kWh fixo
+
+  // Calcular a potência do sistema em kWp
+  let sistema_kWp = energiaDesejada / 125;
+
+  // Produção aproximada (125 kWh/mês por kWp)
+  let producao = sistema_kWp * 125;
+
+  // Quantidade de módulos
+  let n_modulos = Math.ceil((sistema_kWp * 1000) / modulo);
+
+  // Área (2,382 x 1,134 = 2,70 m² por módulo)
+  let area = n_modulos * (2.382 * 1.134);
+
+  // Simulação do FIO B + outras taxas (aproximadamente 35% da energia injetada)
+  let energiaInjetada = producao / 2;
+  let fioB = energiaInjetada * 0.35;
+
+  // Conta final após solar (mínimo R$50)
+  let contaFinal = fioB;
+  if (contaFinal < 50) contaFinal = 50; 
+
+  // Indicadores financeiros
+  let economia = (producao * tarifa - fioB) * 12;
+  let payback = (sistema_kWp * 3470 / economia).toFixed(1);
+
+  document.getElementById("resultado").innerHTML = `
+    <h3>📊 Resultado da Simulação</h3>
+    <b>⚡ Potência do sistema:</b> <span class="highlight">${sistema_kWp.toFixed(2)} kWp</span><br>
+    <b>🔋 Quantidade de módulos:</b> ${n_modulos}<br>
+    <b>📐 Área necessária:</b> ${formatar(area)} m²<br>
+    <b>🌞 Geração mensal estimada:</b> ${Math.round(producao)} kWh<br><br>
+
+    <h3>💡 Conta de Energia Após Solar</h3>
+    <b>📥 Energia injetada:</b> ${Math.round(energiaInjetada)} kWh<br>
+    <b>⚠️ FIO B + outras taxas (aprox. 35%):</b> <span class="highlight">${formatarMoeda(fioB)}</span><br>
+    <b>📊 Nova conta estimada:</b> <span class="highlight-verde">${formatarMoeda(contaFinal)}</span><br><br>
+
+    <h3>📈 Indicadores Financeiros</h3>
+    <b>💵 Economia anual:</b> <span class="highlight-verde">${formatarMoeda(economia)}</span><br>
+    <b>⏳ Payback aproximado:</b> ${payback} anos
+  `;
+}
+</script>
+</body>
+</html>
